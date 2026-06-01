@@ -199,6 +199,19 @@
     }
     .delete-btn:active { background: #fce8e6; }
 
+    /* ─── Copy button ─── */
+    .copy-btn {
+      padding: 4px 10px;
+      font-size: 12px;
+      background: none;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      color: #666;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .copy-btn:active { background: #f0f0f0; }
+
     /* ─── Empty / Loading ─── */
     .empty-state, .loading-state {
       text-align: center;
@@ -251,7 +264,10 @@
   <section class="card">
     <div class="list-header">
       <h2 class="section-title">登録一覧</h2>
-      <span class="count-badge" id="countBadge">0件</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="count-badge" id="countBadge">0件</span>
+        <button id="copyBtn" class="copy-btn">コピー</button>
+      </div>
     </div>
     <div class="entry-list" id="entryList">
       <div class="loading-state">読み込み中...</div>
@@ -279,7 +295,7 @@
   const errorMsg     = document.getElementById('errorMsg');
   const entryList    = document.getElementById('entryList');
   const countBadge   = document.getElementById('countBadge');
-  const resetBtn     = document.getElementById('resetBtn');
+  const copyBtn      = document.getElementById('copyBtn');
   const weekLabel    = document.getElementById('weekLabel');
 
   // ─── 状態 ─────────────────────────────────────────────────────
@@ -454,9 +470,21 @@
   // ─── 削除 ─────────────────────────────────────────────────────
 
   async function deleteEntry(id) {
-    if (!confirm('このエントリを削除しますか？')) return;
+    if (!confirm('削除しますか？')) return;
     await db.ref(`entries/${id}`).remove();
   }
+
+  // ─── コピー ───────────────────────────────────────────────────
+
+  copyBtn.addEventListener('click', async () => {
+    const list = Object.values(entries)
+      .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+    if (list.length === 0) return;
+    const text = list.map(e => `${e.name}, ${e.location}`).join('\n');
+    await navigator.clipboard.writeText(text);
+    copyBtn.textContent = 'コピー完了';
+    setTimeout(() => { copyBtn.textContent = 'コピー'; }, 1500);
+  });
 
   // ─── 起動 ─────────────────────────────────────────────────────
 
