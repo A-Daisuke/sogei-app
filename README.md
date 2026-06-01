@@ -108,7 +108,7 @@ firebase deploy --only hosting
 完了すると以下のようなURLが表示されます：
 
 ```
-Hosting URL: https://your-project.web.app
+Hosting URL: https://sogei-app.web.app
 ```
 
 このURLを全員に共有してください。
@@ -117,7 +117,7 @@ Hosting URL: https://your-project.web.app
 
 ### 5. LINEグループへのURL共有方法
 
-1. 上記の `https://your-project.web.app` をコピー
+1. 以下のURLをコピー：**https://sogei-app.web.app**
 2. LINEグループで貼り付けて送信
 3. メンバーはスマホのブラウザで開いて使用できます
 
