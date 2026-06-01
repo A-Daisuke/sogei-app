@@ -305,6 +305,13 @@
 
   // ─── ユーティリティ ────────────────────────────────────────────
 
+  function formatWeekLabel() {
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const week = Math.ceil(now.getDate() / 7);
+    return `${now.getFullYear()}年${month}月第${week}週`;
+  }
+
   function getWeekKey() {
     const now = new Date();
     const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
@@ -333,7 +340,7 @@
 
   async function checkAndResetWeek() {
     const currentWeek = getWeekKey();
-    weekLabel.textContent = `今週: ${currentWeek}`;
+    weekLabel.textContent = `今週: ${formatWeekLabel()}`;
 
     const snap = await db.ref('weekKey').once('value');
     const savedWeek = snap.val();
