@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>送迎登録</title>
+  <style>
+    /* ─── Reset ─── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* ─── Base ─── */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic UI', sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    /* ─── Layout ─── */
+    .page {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 16px 16px 40px;
+    }
+
+    /* ─── Header ─── */
+    .app-header {
+      text-align: center;
+      padding: 20px 0 18px;
+    }
+    .app-header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+    .week-label {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #888;
+    }
+
+    /* ─── Card ─── */
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    }
+
+    /* ─── Section title ─── */
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #333;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    /* ─── Form ─── */
+    .form-group { margin-bottom: 16px; }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 13px 14px;
+      font-size: 16px;
+      border: 1.5px solid #e4e4e4;
+      border-radius: 10px;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+      background: #fff;
+    }
+    .form-input:focus { border-color: #4285f4; }
+
+    /* ─── Location buttons ─── */
+    .location-group { display: flex; gap: 10px; }
+
+    .location-btn {
+      flex: 1;
+      padding: 13px 10px;
+      font-size: 15px;
+      font-weight: 500;
+      border: 1.5px solid #e4e4e4;
+      border-radius: 10px;
+      background: #fff;
+      color: #888;
+      cursor: pointer;
+      transition: background 0.18s, border-color 0.18s, color 0.18s;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .location-btn.sel-univ {
+      background: #4285f4;
+      border-color: #4285f4;
+      color: #fff;
+    }
+    .location-btn.sel-sta {
+      background: #34a853;
+      border-color: #34a853;
+      color: #fff;
+    }
+
+    /* ─── Submit button ─── */
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      background: #4285f4;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: opacity 0.18s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .submit-btn:disabled { opacity: 0.35; cursor: default; }
+    .submit-btn:not(:disabled):active { opacity: 0.8; }
+
+    /* ─── Error message ─── */
+    .error-msg {
+      display: none;
+      color: #d93025;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    /* ─── List header ─── */
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+    .list-header .section-title { margin: 0; padding: 0; border: none; }
+
+    .count-badge {
+      font-size: 12px;
+      color: #666;
+      background: #f0f0f0;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    /* ─── Entry list ─── */
+    .entry-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .entry-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 10px;
+    }
+
+    .entry-info { flex: 1; min-width: 0; }
+    .entry-name {
+      font-size: 15px;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .entry-time { font-size: 12px; color: #aaa; margin-top: 3px; }
+
+    .loc-badge {
+      flex-shrink: 0;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-univ { background: #e8f0fe; color: #4285f4; }
+    .badge-sta  { background: #e6f4ea; color: #34a853; }
+
+    .delete-btn {
+      flex-shrink: 0;
+      padding: 6px 10px;
+      background: none;
+      border: 1px solid #e4e4e4;
+      border-radius: 7px;
+      color: #d93025;
+      font-size: 13px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .delete-btn:active { background: #fce8e6; }
+
+    /* ─── Empty / Loading ─── */
+    .empty-state, .loading-state {
+      text-align: center;
+      padding: 28px 0;
+      color: #bbb;
+      font-size: 14px;
+    }
+
+    /* ─── Admin reset ─── */
+    .admin-section { margin-top: 16px; text-align: center; }
+
+    .reset-btn {
+      padding: 10px 28px;
+      background: none;
+      border: 1.5px solid #d93025;
+      border-radius: 10px;
+      color: #d93025;
+      font-size: 14px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .reset-btn:active { background: #fce8e6; }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- Header -->
+  <header class="app-header">
+    <h1>🚌 送迎登録</h1>
+    <p class="week-label" id="weekLabel"></p>
+  </header>
+
+  <!-- 登録フォーム -->
+  <section class="card">
+    <h2 class="section-title">登録フォーム</h2>
+
+    <div class="form-group">
+      <label class="form-label" for="nameInput">名前</label>
+      <input
+        id="nameInput"
+        class="form-input"
+        type="text"
+        placeholder="例：山田"
+        autocomplete="off"
+        inputmode="text"
+      />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">乗車場所</label>
+      <div class="location-group">
+        <button class="location-btn" data-loc="大学">🏫 大学</button>
+        <button class="location-btn" data-loc="駅">🚉 駅</button>
+      </div>
+    </div>
+
+    <button id="submitBtn" class="submit-btn" disabled>登録する</button>
+    <p class="error-msg" id="errorMsg"></p>
+  </section>
+
+  <!-- 登録一覧 -->
+  <section class="card">
+    <div class="list-header">
+      <h2 class="section-title">登録一覧</h2>
+      <span class="count-badge" id="countBadge">0件</span>
+    </div>
+    <div class="entry-list" id="entryList">
+      <div class="loading-state">読み込み中...</div>
+    </div>
+
+    <div class="admin-section">
+      <button id="resetBtn" class="reset-btn">全件リセット（管理者用）</button>
+    </div>
+  </section>
+
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<!-- Firebase 設定 -->
+<script src="firebase-config.js"></script>
+
+<script>
+  // ─── Firebase 初期化 ───────────────────────────────────────────
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // ─── DOM ──────────────────────────────────────────────────────
+  const nameInput    = document.getElementById('nameInput');
+  const locationBtns = document.querySelectorAll('.location-btn');
+  const submitBtn    = document.getElementById('submitBtn');
+  const errorMsg     = document.getElementById('errorMsg');
+  const entryList    = document.getElementById('entryList');
+  const countBadge   = document.getElementById('countBadge');
+  const resetBtn     = document.getElementById('resetBtn');
+  const weekLabel    = document.getElementById('weekLabel');
+
+  // ─── 状態 ─────────────────────────────────────────────────────
+  let selectedLocation = null;
+  let entries = {};
+
+  // ─── ユーティリティ ────────────────────────────────────────────
+
+  function getWeekKey() {
+    const now = new Date();
+    const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    const week = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    return `${d.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
+  }
+
+  function formatTime(date) {
+    const m = date.getMonth() + 1;
+    const d = date.getDate();
+    const h = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+    return `${m}/${d} ${h}:${min}`;
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }
+
+  // ─── 週キーチェック & 自動リセット ──────────────────────────────
+
+  async function checkAndResetWeek() {
+    const currentWeek = getWeekKey();
+    weekLabel.textContent = `今週: ${currentWeek}`;
+
+    const snap = await db.ref('weekKey').once('value');
+    const savedWeek = snap.val();
+
+    if (savedWeek && savedWeek !== currentWeek) {
+      await db.ref('entries').remove();
+    }
+    await db.ref('weekKey').set(currentWeek);
+  }
+
+  // ─── リアルタイムリスナー ──────────────────────────────────────
+
+  function setupListener() {
+    db.ref('entries').on('value', (snap) => {
+      entries = snap.val() || {};
+      renderEntries();
+    });
+  }
+
+  // ─── エントリ描画 ─────────────────────────────────────────────
+
+  function renderEntries() {
+    const list = Object.entries(entries)
+      .sort((a, b) => (a[1].timestamp || 0) - (b[1].timestamp || 0));
+
+    countBadge.textContent = `${list.length}件`;
+
+    if (list.length === 0) {
+      entryList.innerHTML = '<div class="empty-state">まだ登録がありません</div>';
+      return;
+    }
+
+    entryList.innerHTML = list.map(([id, entry]) => {
+      const isUniv = entry.location === '大学';
+      return `
+        <div class="entry-item">
+          <div class="entry-info">
+            <div class="entry-name">${escapeHtml(entry.name)}</div>
+            <div class="entry-time">${escapeHtml(entry.time)}</div>
+          </div>
+          <span class="loc-badge ${isUniv ? 'badge-univ' : 'badge-sta'}">
+            ${isUniv ? '🏫 大学' : '🚉 駅'}
+          </span>
+          <button class="delete-btn" data-id="${id}">削除</button>
+        </div>
+      `;
+    }).join('');
+
+    // 削除ボタンイベント（委譲）
+    entryList.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', () => deleteEntry(btn.dataset.id));
+    });
+  }
+
+  // ─── 場所ボタン ───────────────────────────────────────────────
+
+  locationBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      locationBtns.forEach(b => b.classList.remove('sel-univ', 'sel-sta'));
+      selectedLocation = btn.dataset.loc;
+      btn.classList.add(selectedLocation === '大学' ? 'sel-univ' : 'sel-sta');
+      hideError();
+      updateSubmit();
+    });
+  });
+
+  // ─── 名前入力 ─────────────────────────────────────────────────
+
+  nameInput.addEventListener('input', () => {
+    hideError();
+    updateSubmit();
+  });
+
+  function updateSubmit() {
+    submitBtn.disabled = !nameInput.value.trim() || !selectedLocation;
+  }
+
+  function hideError() {
+    errorMsg.style.display = 'none';
+  }
+
+  function showError(msg) {
+    errorMsg.textContent = msg;
+    errorMsg.style.display = 'block';
+  }
+
+  // ─── 登録 ─────────────────────────────────────────────────────
+
+  submitBtn.addEventListener('click', async () => {
+    const name = nameInput.value.trim();
+    if (!name || !selectedLocation) return;
+
+    // 重複チェック
+    const isDuplicate = Object.values(entries).some(e => e.name === name);
+    if (isDuplicate) {
+      showError(`「${name}」はすでに登録されています`);
+      return;
+    }
+
+    const now = new Date();
+    const entry = {
+      name,
+      location: selectedLocation,
+      time: formatTime(now),
+      timestamp: now.getTime(),
+      weekKey: getWeekKey()
+    };
+
+    submitBtn.disabled = true;
+    try {
+      await db.ref('entries').push(entry);
+      resetForm();
+    } catch {
+      showError('登録に失敗しました。もう一度お試しください。');
+      updateSubmit();
+    }
+  });
+
+  function resetForm() {
+    nameInput.value = '';
+    locationBtns.forEach(b => b.classList.remove('sel-univ', 'sel-sta'));
+    selectedLocation = null;
+    hideError();
+    updateSubmit();
+  }
+
+  // ─── 削除 ─────────────────────────────────────────────────────
+
+  async function deleteEntry(id) {
+    if (!confirm('このエントリを削除しますか？')) return;
+    await db.ref(`entries/${id}`).remove();
+  }
+
+  // ─── 全件リセット（管理者） ────────────────────────────────────
+
+  resetBtn.addEventListener('click', async () => {
+    if (!confirm('全ての登録を削除しますか？\nこの操作は取り消せません。')) return;
+    await db.ref('entries').remove();
+  });
+
+  // ─── 起動 ─────────────────────────────────────────────────────
+
+  (async () => {
+    await checkAndResetWeek();
+    setupListener();
+  })();
+</script>
+
+</body>
+</html>
