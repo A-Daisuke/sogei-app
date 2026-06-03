@@ -340,7 +340,7 @@
 
   async function checkAndResetWeek() {
     const currentWeek = getWeekKey();
-    weekLabel.textContent = `今週: ${formatWeekLabel()}`;
+    weekLabel.textContent = `${formatWeekLabel()}`;
 
     const snap = await db.ref('weekKey').once('value');
     const savedWeek = snap.val();
